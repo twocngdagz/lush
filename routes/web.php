@@ -20,7 +20,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/test', [HomeController::class, 'home']);
-Route::get('/login',[AuthenticatedSessionController::class, 'create']);
-Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::get('/dashboard', [HomeController::class, 'home'])
+->name('dashboard')
+->middleware('auth');
+Route::get('/login',[AuthenticatedSessionController::class, 'create'])
+->name('login')
+->middleware('guest');
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+->name('login.store')
+->middleware('guest');
 

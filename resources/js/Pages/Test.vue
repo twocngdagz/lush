@@ -1,5 +1,5 @@
 <template>
-    <Layout>
+    <Layout :user="user">
         <Head title="Dashboard" />
         <h1 class="text-3xl font-bold underline">
             Hello
