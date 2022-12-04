@@ -48,7 +48,7 @@
         <!-- Static sidebar for desktop -->
         <div class="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
             <!-- Sidebar component, swap this element with another sidebar if you like -->
-            <div class="flex flex-grow flex-col overflow-y-auto bg-indigo-700 pt-5">
+            <div class="flex flex-grow flex-col overflow-y-auto bg-indigo-700        pt-5">
                 <div class="flex flex-shrink-0 items-center px-4">
                     <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=300" alt="Your Company" />
                 </div>
@@ -76,16 +76,11 @@
                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center">
                                     <MagnifyingGlassIcon class="h-5 w-5" aria-hidden="true" />
                                 </div>
-                                <input id="search-field" class="block h-full w-full border-transparent py-2 pl-8 pr-3 text-gray-900 placeholder-gray-500 focus:border-transparent focus:placeholder-gray-400 focus:outline-none focus:ring-0 sm:text-sm" placeholder="Search" type="search" name="search" />
+                                <input id="search-field" class="block h-full w-full border-transparent py-2 pl-8 pr-3 text-gray-900 placeholder-gray-500 focus:border-transparent focus:placeholder-gray-400 focus:outline-none focus:ring-0 sm:text-sm" placeholder="Search Promotions" type="search" name="search" />
                             </div>
                         </form>
                     </div>
                     <div class="ml-4 flex items-center md:ml-6">
-                        <button type="button" class="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                            <span class="sr-only">View notifications</span>
-                            <BellIcon class="h-6 w-6" aria-hidden="true" />
-                        </button>
-
                         <!-- Profile dropdown -->
                         <Menu as="div" class="relative ml-3">
                             <div>
