@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\PropertyConnectorSettings;
 use App\Services\OriginConnector\Providers\Oasis\v12\nConnect\v1\Models\PropertyRedemptionAccountSettings;
-use App\TicketPrinter;
 use App\Traits\LogsAllActivity;
-
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class Property extends Model
@@ -66,12 +65,12 @@ class Property extends Model
         return $this->hasOne(PropertyReportServerSettings::class)->withDefault();
     }
 
-    public function mailServerSettings()
+    public function mailServerSettings(): HasOne
     {
         return $this->hasOne(PropertyMailServerSettings::class)->withDefault();
     }
 
-    public function oneLinkSettings()
+    public function oneLinkSettings(): HasOne
     {
         return $this->hasOne(PropertyOneLinkSettings::class)->withDefault();
     }
@@ -81,12 +80,12 @@ class Property extends Model
         return $this->hasOne(PropertyHotelSettings::class)->withDefault();
     }
 
-    public function printers()
+    public function printers(): HasMany
     {
         return $this->hasMany(TicketPrinter::class);
     }
 
-    public function pokerRatings()
+    public function pokerRatings(): HasMany
     {
         return $this->hasMany(PropertyPokerRating::class);
     }
@@ -100,7 +99,7 @@ class Property extends Model
         return self::where('property_code', '=', $code)->first();
     }
 
-    public function getBalanceDisplayOptionsAttribute()
+    public function getBalanceDisplayOptionsAttribute(): Collection
     {
         $default = collect(\Origin::balanceDisplayOptions());
         $saved = collect([]);
@@ -131,7 +130,7 @@ class Property extends Model
      * propertyRedemptionAccountSettings attribute
      * @return \Illuminate\Database\Eloquent\Relations\HasOne|PropertyRedemptionAccountSettings
      */
-    public function redemptionAccountSettings()
+    public function redemptionAccountSettings(): HasOne|PropertyRedemptionAccountSettings
     {
         return $this->hasOne(PropertyRedemptionAccountSettings::class)->latest()->withDefault();
     }
@@ -139,11 +138,11 @@ class Property extends Model
     /**
      * Ticket Printer relationship for property
      *
-     * @return App\TicketPrinter
+     * @return HasMany
      */
-    public function ticketPrinters()
+    public function ticketPrinters(): HasMany
     {
-        return $this->hasMany(\App\TicketPrinter::class, 'property_id', 'id');
+        return $this->hasMany(TicketPrinter::class, 'property_id', 'id');
     }
 
     /**
@@ -151,7 +150,7 @@ class Property extends Model
      *
      * @return boolean
      */
-    public function getEnableKioskAudioAttribute()
+    public function getEnableKioskAudioAttribute(): bool
     {
         return config('audio.enable_kiosk_audio', false);
     }
