@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\Property\PropertyConnectorSettings;
+use App\Models\PropertyConnectorSettings;
 use App\Services\OriginConnector\Providers\Oasis\v12\nConnect\v1\Models\PropertyRedemptionAccountSettings;
 use App\TicketPrinter;
 use App\Traits\LogsAllActivity;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
 
 class Property extends Model
@@ -18,7 +19,7 @@ class Property extends Model
     protected $guarded = [];
     protected $appends = ['display_name', 'lush_apps'];
 
-    public function getDisplayNameAttribute()
+    public function getDisplayNameAttribute(): ?string
     {
         return ($this->property_code && $this->name) ? $this->property_code . ' - ' . $this->name : null;
     }
@@ -53,14 +54,14 @@ class Property extends Model
     /**
      * connectorSettings attribute
      *
-     * @return App\Models\Property\PropertyConnectorSettings
+     * @return PropertyConnectorSettings
      */
-    public function getConnectorSettingsAttribute(): App\Models\Property\PropertyConnectorSettings
+    public function getConnectorSettingsAttribute(): PropertyConnectorSettings
     {
         return PropertyConnectorSettings::findByPropertyId($this->id);
     }
 
-    public function reportServerSettings()
+    public function reportServerSettings(): HasOne
     {
         return $this->hasOne(PropertyReportServerSettings::class)->withDefault();
     }
@@ -154,5 +155,6 @@ class Property extends Model
     {
         return config('audio.enable_kiosk_audio', false);
     }
+
 
 }
