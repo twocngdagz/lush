@@ -5,12 +5,11 @@ namespace App\Models;
 use App\Services\RealWinSolution\Models\RealWinConnection;
 use App\Traits\LogsAllActivity;
 use App\Traits\UsesModelIdentifier;
-use App\Models\Account\AccountRankExclusion;
-use App\Models\Account\AccountConnectorSettings;
 use App\Services\OriginConnector\Facades\OriginFacade as Origin;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Account extends Model
 {
@@ -45,7 +44,7 @@ class Account extends Model
      *
      * @return HasMany
      */
-    public function properties()
+    public function properties(): HasMany
     {
         return $this->hasMany(Property::class);
     }
@@ -53,14 +52,14 @@ class Account extends Model
     /**
      * connectorSettings attribute
      *
-     * @return AccountConnectorSettings
+     * @return HasOne
      */
-    public function connectorSettings()
+    public function connectorSettings(): HasOne
     {
         return $this->hasOne(AccountConnectorSettings::class)->latest()->withDefault();
     }
 
-    public function realWinConnectorSettings()
+    public function realWinConnectorSettings(): HasOne
     {
         return $this->hasOne(RealWinConnection::class)->latest();
     }
@@ -70,7 +69,7 @@ class Account extends Model
      *
      * @return HasMany
      */
-    public function rankExclusions()
+    public function rankExclusions(): HasMany
     {
         return $this->hasMany(AccountRankExclusion::class);
     }
@@ -80,7 +79,7 @@ class Account extends Model
      *
      * @return float|string
      */
-    public function getPointsPerDollarAttribute()
+    public function getPointsPerDollarAttribute(): float|int|string
     {
         if (appFeatures('setting.points-per-dollar')) {
             return Origin::getPropertyPointsPerDollar();
@@ -94,7 +93,7 @@ class Account extends Model
      *
      * @return float|string
      */
-    public function getCompsPerDollarAttribute()
+    public function getCompsPerDollarAttribute(): float|int|string
     {
         if (appFeatures('setting.comps-per-dollar')) {
             return Origin::getPropertyCompsPerDollar();

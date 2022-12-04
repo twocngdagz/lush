@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
-use App\Property;
 use App\Models\Kiosk\ScanTrigger;
 use App\Traits\UsesModelIdentifier;
 use App\Traits\AssociatedWithAccount;
 
 use Carbon\Carbon;
 use App\Traits\LogsAllActivity;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Kiosk extends Model
 {
@@ -38,18 +41,18 @@ class Kiosk extends Model
     /**
      * Account relationship for kiosk
      *
-     * @return App\Account
+     * @return BelongsTo
      **/
-    public function account(): App\Account
+    public function account(): BelongsTo
     {
-        return $this->belongsTo(\App\Account::class);
+        return $this->belongsTo(Account::class);
     }
 
     /**
      * Property Relationship
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
-    public function property()
+    public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
@@ -57,45 +60,45 @@ class Kiosk extends Model
     /**
      * Ticket Printer relationship for kiosk
      *
-     * @return App\TicketPrinter
+     * @return HasOne
      */
-    public function ticketPrinter()
+    public function ticketPrinter(): HasOne
     {
-        return $this->hasOne(\App\TicketPrinter::class);
+        return $this->hasOne(TicketPrinter::class);
     }
 
     /**
      * Card printer relationship for kiosk
      *
-     * @return App\KioskCardPrinter
+     * @return HasOne
      **/
-    public function cardPrinter()
+    public function cardPrinter(): HasOne
     {
-        return $this->hasOne(\App\KioskCardPrinter::class);
+        return $this->hasOne(KioskCardPrinter::class);
     }
 
     /**
      * ID Document Scanner relationship for kiosk
      *
      **/
-    public function documentScanner()
+    public function documentScanner(): HasOne
     {
-        return $this->hasOne(\App\KioskDocumentScanner::class);
+        return $this->hasOne(KioskDocumentScanner::class);
     }
 
     /**
      * Event log relationship for kiosk
      *
-     * @return Collection
+     * @return HasMany
      **/
-    public function events()
+    public function events(): HasMany
     {
-        return $this->hasMany(\App\EventLog::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(EventLog::class)->orderBy('created_at', 'desc');
     }
 
     /**
      * Get all events that happened within the past week
-     * @return Relationship
+     *
      */
     public function eventsToday()
     {
@@ -104,7 +107,7 @@ class Kiosk extends Model
 
     /**
      * Get all events that happened within the past week
-     * @return Relationship
+     *
      */
     public function eventsThisWeek()
     {
@@ -113,7 +116,7 @@ class Kiosk extends Model
 
     /**
      * Get all events that happened within the past month
-     * @return Relationship
+     *
      */
     public function eventsThisMonth()
     {
@@ -125,18 +128,15 @@ class Kiosk extends Model
      *
      * @return string
      **/
-    public function getKioskUrlAttribute()
+    public function getKioskUrlAttribute(): string
     {
-        if (empty($this->property->app_kiosk_url)) {
-            throw new \Exception("Missing kiosk URL in property settings for property {$this->property->property_code} - {$this->property->name}.");
-        }
-        return "{$this->property->app_kiosk_url}?kiosk={$this->identifier}";
+        return empty($this->property->app_kiosk_url) ? throw new Exception("Missing kiosk URL in property settings for property {$this->property->property_code} - {$this->property->name}.") : "{$this->property->app_kiosk_url}?kiosk={$this->identifier}";
     }
 
     /**
      * Quick properties check to see if we can edit this promotion
      **/
-    public function getCanEditAttribute()
+    public function getCanEditAttribute(): bool
     {
         if (!auth()->user()) return false;
         else if (auth()->user()->isA('super-admin')) return true;
@@ -144,7 +144,7 @@ class Kiosk extends Model
         return in_array($this->property_id, auth()->user()->property_ids);
     }
 
-    public function scanTriggers()
+    public function scanTriggers(): HasMany
     {
         return $this->hasMany(ScanTrigger::class);
     }
