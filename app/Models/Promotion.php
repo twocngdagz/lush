@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
@@ -422,9 +423,9 @@ class Promotion extends Model
     /**
      * Card image relationship for this promotion
      *
-     * @return App\Image
+     * @return BelongsTo
      **/
-    public function image()
+    public function image(): BelongsTo
     {
         return $this->belongsTo(Image::class);
     }
@@ -432,36 +433,36 @@ class Promotion extends Model
     /**
      * Groups relationship for promotions
      *
-     * @return Illuminate\Support\Collection
+     * @return HasMany
      **/
-    public function groups()
+    public function groups(): HasMany
     {
         return $this->hasMany(PromotionGroup::class);
     }
 
     /**
      * Player restrictions relationship
-     * @return BelongsToMany
+     * @return HasMany
      */
-    public function restrictions()
+    public function restrictions(): HasMany
     {
         return $this->hasMany(PromotionRestriction::class)->with('player');
     }
 
     /**
      * Player restrictions group relationship
-     * @return BelongsToMany
+     * @return HasMany
      */
-    public function restrictionGroups()
+    public function restrictionGroups(): HasMany
     {
         return $this->hasMany(PromotionRestrictionGroup::class);
     }
 
     /**
      * Players that are restricted from this promotion
-     * @return Illuminate\Support\Collection
+     * @return Collection
      */
-    public function restrictedPlayers()
+    public function restrictedPlayers(): Collection
     {
         return $this->restrictions->map(function ($r) {
             return $r->player;
