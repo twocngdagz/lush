@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
@@ -239,11 +240,11 @@ class Promotion extends Model
     /**
      * Promotion type relationship
      *
-     * @return PromotionType
+     * @return BelongsTo
      **/
-    public function type(): PromotionType
+    public function type(): BelongsTo
     {
-        return $this->belongsTo('App\PromotionType', 'promotion_type_id');
+        return $this->belongsTo('PromotionType', 'promotion_type_id');
     }
 
     /**
@@ -257,9 +258,9 @@ class Promotion extends Model
     /**
      * Rewards associated with this promotion
      *
-     * @return Illuminate\Support\Collection
+     * @return HasMany
      **/
-    public function rewards(): Collection
+    public function rewards(): HasMany
     {
         return $this->hasMany(Reward::class);
     }
@@ -267,9 +268,9 @@ class Promotion extends Model
     /**
      * Bounce Back promotion associated with this promotion
      *
-     * @return Illuminate\Support\Collection
+     * @return HasOne
      */
-    public function bounceBackPromotion(): Collection
+    public function bounceBackPromotion(): HasOne
     {
         return $this->hasOne(BounceBackPromotion::class);
     }
@@ -490,9 +491,9 @@ class Promotion extends Model
 
     /**
      * Players that are whitelisted for this promotion
-     * @return Illuminate\Support\Collection
+     *
      */
-    public function whitelistedPlayers()
+    public function whitelistedPlayers(): Collection
     {
         return $this->whitelist->map(function ($r) {
             return $r->player;
@@ -503,16 +504,16 @@ class Promotion extends Model
      * Does this promotion have group or rank access restrictions?
      * @return boolean
      */
-    public function hasAccessRestrictions()
+    public function hasAccessRestrictions(): bool
     {
         return $this->groups()->exists() || $this->ranks()->exists() || $this->restrictionGroups()->exists();
     }
 
     /**
      * Player imports relationship
-     * @return BelongsToMany
+     * @return HasMany
      */
-    public function playerImports()
+    public function playerImports(): HasMany
     {
         return $this->hasMany(PromotionPlayerImport::class);
     }

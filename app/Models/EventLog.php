@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -34,7 +35,7 @@ class EventLog extends Model
      * Get all events that happened within the past week
      *
      */
-    public function scopeEventsToday($q)
+    public function scopeEventsToday($q): Builder
     {
         return $q->where('created_at', '>', Carbon::now()->startOfDay());
     }
@@ -43,25 +44,25 @@ class EventLog extends Model
      * Get all events that happened within the past week
      * @return Relationship
      */
-    public function scopeEventsThisWeek($q)
+    public function scopeEventsThisWeek($q): Builder
     {
         return $q->where('created_at', '>', Carbon::now()->subWeeks(1));
     }
 
     /**
      * Get all events that happened within the past month
-     * @return Relationship
+     * @return Builder
      */
-    public function scopeEventsThisMonth($q)
+    public function scopeEventsThisMonth($q) : Builder
     {
         return $q->where('created_at', '>', Carbon::now()->subMonths(1));
     }
 
     /**
      * Get all events that happened within the past year
-     * @return Relationship
+     * @return Builder
      */
-    public function scopeEventsThisYear($q)
+    public function scopeEventsThisYear($q): Builder
     {
         return $q->where('created_at', '>', Carbon::now()->subYear(1));
     }

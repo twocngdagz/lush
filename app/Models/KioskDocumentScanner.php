@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsAllActivity;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class KioskDocumentScanner extends Model
 {
@@ -25,10 +26,10 @@ class KioskDocumentScanner extends Model
     /**
      * ID Document Scanner Type relationship
      *
-     * @return App\IdDocumentScannerType
+     * @return HasOne
      */
-    public function IdDocumentScannerType()
+    public function IdDocumentScannerType(): HasOne
     {
-        return $this->hasOne(\App\IdDocumentScannerType::class, 'id', 'id_document_scanner_type_id');
+        return $this->hasOne(IdDocumentScannerType::class, 'id', 'id_document_scanner_type_id');
     }
 }

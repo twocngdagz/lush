@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\Kiosk\ScanTrigger;
 use App\Traits\UsesModelIdentifier;
 use App\Traits\AssociatedWithAccount;
 
 use Carbon\Carbon;
 use App\Traits\LogsAllActivity;
 use Exception;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -100,7 +100,7 @@ class Kiosk extends Model
      * Get all events that happened within the past week
      *
      */
-    public function eventsToday()
+    public function eventsToday(): Builder
     {
         return $this->events()->where('created_at', '>', Carbon::now()->startOfDay());
     }
@@ -109,7 +109,7 @@ class Kiosk extends Model
      * Get all events that happened within the past week
      *
      */
-    public function eventsThisWeek()
+    public function eventsThisWeek(): Builder
     {
         return $this->events()->where('created_at', '>', Carbon::now()->subWeeks(1));
     }
@@ -118,7 +118,7 @@ class Kiosk extends Model
      * Get all events that happened within the past month
      *
      */
-    public function eventsThisMonth()
+    public function eventsThisMonth(): Builder
     {
         return $this->events()->where('created_at', '>', Carbon::now()->subMonths(1));
     }
