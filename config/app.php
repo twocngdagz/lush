@@ -186,6 +186,8 @@ return [
          * Package Service Providers...
          */
 
+        App\Providers\OriginConnectorProvider::class,
+
         /*
          * Application Service Providers...
          */
@@ -210,6 +212,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
+        'Origin' => App\Services\OriginConnector\Facades\OriginFacade::class,
     ])->toArray(),
 
 ];
