@@ -100,7 +100,7 @@ interface PlayerContract {
      * @param  Carbon $expiresAt When the awarded value expires
      * @return void
      */
-    public function addPlayerAccountBalance(int $id, int $accountId, int $amount, string $description, ?string $comment = null, ?Carbon $expiresAt = null): void;
+    public function addPlayerAccountBalance(int $id, int $accountId, int $amount, string $description, ?string $comment = null, ?Carbon $expiresAt = null): string;
 
     /**
      * Get a player's groups
@@ -117,7 +117,7 @@ interface PlayerContract {
      * @param string $statType
      * @return array
      */
-    public function getPlayerTracking($extPlayerId, Carbon $startDate = null, Carbon $endDate = null, string $statType = null): array;
+    public function getPlayerTracking(int $extPlayerId, ?Carbon $startDate = null, ?Carbon $endDate = null, ?string $statType = null): array;
 
     /**
      * Convert the balance of a player's points to dollars

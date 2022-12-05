@@ -14,7 +14,7 @@ interface PropertyContract {
      * one by ID or Name.
      * @return Collection
      */
-    public function getPropertyGroups($search = null): Collection;
+    public function getPropertyGroups(?string $search = null): Collection;
 
     /**
      * Get default property info

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 trait PlayerEarningTrait
 {
-    public function getPlayerTracking($extPlayerId, Carbon $startDate = null, Carbon $endDate = null, string $statType = null)
+    public function getPlayerTracking(int $extPlayerId, ?Carbon $startDate = null, ?Carbon $endDate = null, ?string $statType = null): array
     {
         $cacheId = "getLushPlayerTracking:$extPlayerId";
         if ($startDate) {
