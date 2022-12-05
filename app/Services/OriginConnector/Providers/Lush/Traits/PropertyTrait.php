@@ -9,11 +9,12 @@ use App\Services\OriginConnector\Exceptions\PropertyNotFoundException;
 use App\Services\OriginConnector\Providers\PhiMock\Transformers\PropertyGroupTransformer;
 use App\Services\OriginConnector\Providers\PhiMock\Transformers\PropertyInfoTransformer;
 use App\Services\OriginConnector\Providers\PhiMock\Transformers\PropertyRankTransformer;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 trait PropertyTrait
 {
-    public function getPropertyGroups($search = null)
+    public function getPropertyGroups(?string $search = null): Collection
     {
         return $this->remember("getLushPropertyGroups:$search", function () use ($search) {
             try {
@@ -25,7 +26,7 @@ trait PropertyTrait
         });
     }
 
-    public function getPropertyInfo($propertyId = null)
+    public function getPropertyInfo(int|string|null $propertyId = null): array
     {
         return $this->remember("getLushPropertyInfo", function () {
             try {
@@ -40,7 +41,7 @@ trait PropertyTrait
         });
     }
 
-    public function getPropertyRanks()
+    public function getPropertyRanks(): Collection
     {
         return $this->remember("getLushPropertyRanks", function () {
             try {
@@ -52,12 +53,12 @@ trait PropertyTrait
         });
     }
 
-    public function getPropertyTransactionTypes($search = null)
+    public function getPropertyTransactionTypes(int|string|null $search = null): Collection
     {
         return collect();
     }
 
-    public function getPropertyPointsPerDollar()
+    public function getPropertyPointsPerDollar(): float
     {
         // We need to add a setting to the mock CMS for this and
         // expose it via an API endpoint. For now we will just

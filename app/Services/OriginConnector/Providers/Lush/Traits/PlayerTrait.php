@@ -3,7 +3,7 @@
 namespace App\Services\OriginConnector\Providers\Lush\Traits;
 
 use App\Models\Kiosk\CardPrintDetail;
-use App\Player;
+use App\Models\Player;
 use App\Services\OriginConnector\ConnectionException;
 use App\Services\OriginConnector\Exceptions\InvalidPinException;
 use App\Services\OriginConnector\Exceptions\PlayerUpdateProfileException;
@@ -21,7 +21,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 trait PlayerTrait
 {
-    public function getPlayer($extPlayerId)
+    public function getPlayer(int $extPlayerId): array
     {
         Log::info("ORIGIN : getPlayer - Ext ID:{$extPlayerId}");
 
@@ -49,7 +49,7 @@ trait PlayerTrait
         return $result;
     }
 
-    public function getPlayerAccounts($extPlayerId)
+    public function getPlayerAccounts(int $extPlayerId): array
     {
         Log::info("ORIGIN : getPlayerAccounts - Ext ID:{$extPlayerId}");
 
@@ -75,7 +75,7 @@ trait PlayerTrait
         return collect($result);
     }
 
-    public function getPlayerFromSwipeId($swipeId)
+    public function getPlayerFromSwipeId(string $swipeId): array
     {
         $trackData = explode(';', $swipeId);
         $swipeId = trim(preg_replace('/\D/', '', $trackData[0]));
@@ -97,7 +97,7 @@ trait PlayerTrait
         return $result;
     }
 
-    public function validatePinNumber($extPlayerId, $pin)
+    public function validatePinNumber(int $extPlayerId, string $pin): bool
     {
         Log::info("ORIGIN : validatePinNumber - Ext ID:{$extPlayerId}");
 
@@ -111,7 +111,7 @@ trait PlayerTrait
             ])->validated();
 
             $player = LushPlayer::findOrFail($extPlayerId);
-            
+
 
             if ($player->card_pin_attempts >= 3) {
                 \Log::warning("Attempt to validate deactivated PIN by player {$player->id}");
@@ -133,13 +133,13 @@ trait PlayerTrait
     }
 
     public function addPlayerAccountBalance(
-        $extPlayerId,
-        $accountName,
-        $amount,
-        $description = 'Loyalty Rewards Deposit',
-        $comment = 'Loyalty Rewards Deposit',
-        Carbon $expiresAt = null
-    ) {
+        int $extPlayerId,
+        int $accountName,
+        int $amount,
+        string $description = 'Loyalty Rewards Deposit',
+        ?string $comment = 'Loyalty Rewards Deposit',
+        ?Carbon $expiresAt = null
+    ): string {
         // Get the account type for the accountName
         $playerAccount = $this->getPlayerAccounts($extPlayerId)->firstWhere('name', $accountName);
         $account = LushAccount::findOrFail($playerAccount->id);
@@ -168,7 +168,7 @@ trait PlayerTrait
         }
     }
 
-        public function getPlayerGroups($extPlayerId)
+        public function getPlayerGroups(int $extPlayerId): array
     {
         return $this->rememberPlayer('getLushPlayerGroups:' . $extPlayerId, function () use ($extPlayerId) {
             try {
