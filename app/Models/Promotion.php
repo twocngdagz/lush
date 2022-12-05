@@ -582,9 +582,9 @@ class Promotion extends Model
     /**
      * Static Promotion Relationship
      *
-     * @return App\StaticPromotionAdditionalInfo
+     * @return HasOne
      **/
-    public function additionalInfo(): StaticPromotionAdditionalInfo
+    public function additionalInfo(): HasOne
     {
         return $this->hasOne(StaticPromotionAdditionalInfo::class);
     }
@@ -592,9 +592,9 @@ class Promotion extends Model
     /**
      * Promotion Relationship
      *
-     * @return App\PromotionStaggeredRedemptionsImport
+     * @return HasMany
      **/
-    public function staggeredRedemptionsImport()
+    public function staggeredRedemptionsImport(): HasMany
     {
         return $this->hasMany(PromotionStaggeredRedemptionsImport::class);
     }
@@ -615,24 +615,24 @@ class Promotion extends Model
     /**
      * @return mixed
      */
-    public function getPropertiesListAttribute()
+    public function getPropertiesListAttribute(): string
     {
         return $this->properties->implode('ext_property_id', ',');
     }
 
-    public function getEarningMethodNamesAttribute()
+    public function getEarningMethodNamesAttribute(): string
     {
         return $this->earningMethodTypes->implode('name', ', ');
     }
 
-    public function getTypeIdentifierAttribute()
+    public function getTypeIdentifierAttribute(): string
     {
         return Cache::remember("promotion_type:{$this->promotion_type_id}:identifier", now()->addMinutes(90), function () {
             return $this->type->identifier;
         });
     }
 
-    public function getTypeNameAttribute()
+    public function getTypeNameAttribute(): string
     {
         return Cache::remember("promotion_type_name:{$this->promotion_type_id}:name", now()->addMinutes(90), function () {
             return $this->type->name;
@@ -643,7 +643,7 @@ class Promotion extends Model
      * Get's the starts_at value from the different promotion types
      * default to created_at date
      */
-    public function getStartsAtAttribute()
+    public function getStartsAtAttribute(): Carbon
     {
         switch ($this->type_identifier) {
             case 'drawing':
@@ -663,7 +663,7 @@ class Promotion extends Model
      * Get's the ends_at value from the different promotion types
      * defaulting to expires_on date
      */
-    public function getEndsAtAttribute()
+    public function getEndsAtAttribute(): Carbon
     {
         switch ($this->type_identifier) {
             case 'drawing':
@@ -682,17 +682,17 @@ class Promotion extends Model
     /**
      * Timestamp shortcuts for starts_at and ends_at
      */
-    public function getStartsTsAttribute()
+    public function getStartsTsAttribute(): ?Carbon
     {
         return is_object($this->starts_at) ? $this->starts_at->timestamp : null;
     }
 
-    public function getEndsTsAttribute()
+    public function getEndsTsAttribute(): ?Carbon
     {
         return is_object($this->ends_at) ? $this->ends_at->timestamp : null;
     }
 
-    public function getPropertyIdsAttribute()
+    public function getPropertyIdsAttribute(): array
     {
         return $this->properties->pluck('id')->toArray();
     }
@@ -700,7 +700,7 @@ class Promotion extends Model
     /**
      * Quick properties check to see if we can edit this promotion.
      **/
-    public function getCanEditAttribute()
+    public function getCanEditAttribute(): bool
     {
         if (!auth()->user() || !auth()->user()->can('edit-promotions')) {
             return false;
@@ -718,7 +718,7 @@ class Promotion extends Model
     /**
      * Quick properties check to see if we can approve this promotion
      **/
-    public function getCanApproveAttribute()
+    public function getCanApproveAttribute(): bool
     {
         if ($this->isMissingOriginGroup()) {
             return false;
@@ -735,7 +735,7 @@ class Promotion extends Model
     /**
      * Quick properties check to see if this promotion can be shown before pin entry
      **/
-    public function getIsPinlessAttribute()
+    public function getIsPinlessAttribute(): bool
     {
         switch ($this->type_identifier) {
             case 'swipewin':
@@ -752,7 +752,7 @@ class Promotion extends Model
      * Check to see if this promotion has redemptions.
      * If we have redemptions then we have to prevent editing of the earning methods.
      **/
-    public function getHasRedemptionsAttribute()
+    public function getHasRedemptionsAttribute(): bool
     {
         foreach ($this->rewards as $reward) {
             if ($reward->redemptions()->count() > 0) return true;
@@ -770,7 +770,7 @@ class Promotion extends Model
 
     /**
      * Does the player meet criteria for this promotion?
-     * @param \App\Player $player
+     * @param Player $player
      * @return bool
      * @throws Exception
      */
@@ -826,11 +826,11 @@ class Promotion extends Model
      *
      * Rewards redemptions cannot exceed the defined max.
      * Redraw in the event of a maxed out reward being drawn
-     * @param \App\Player $player
+     * @param Player $player
      * @return Reward|null
      * @throws Exception
      */
-    public function drawReward(Player $player)
+    public function drawReward(Player $player): ?Reward
     {
         // get the reward pool
         $pool = $this->getRewardPool($player);
@@ -852,7 +852,7 @@ class Promotion extends Model
      * @param \App\Player $player
      * @return Collection|null
      */
-    public function getRewardPool(Player $player)
+    public function getRewardPool(Player $player): ?Collection
     {
         // all remaining rewards for this promotion the player is eligible for
         $rewards = $this->rewards
@@ -893,16 +893,18 @@ class Promotion extends Model
      * @param $jobName
      * @return bool
      */
-    public function getHasPendingImport($jobName) {
+    public function getHasPendingImport($jobName): bool
+    {
         return $this->playerImports()->processing()->where('job_name', $jobName)->count() > 0;
     }
 
     /**
      * Return all kiosks the promotion is set to run on.
      *
-     * @return App\Kiosk[]
+     * @return Kiosk
      */
-    public function getAvailableOnKiosksAttribute() {
+    public function getAvailableOnKiosksAttribute(): Kiosk
+    {
         if ($this->kiosks == null) {
             return Kiosk::orderBy('name')->get();
         }
