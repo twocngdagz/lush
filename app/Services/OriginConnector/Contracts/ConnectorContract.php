@@ -24,7 +24,7 @@ interface ConnectorContract extends PlayerContract, PropertyContract {
      * @param string $appends The cache ID string to append to the default
      * @return string
      */
-    public function cacheId($appends): string;
+    public function cacheId(string $appends): string;
 
     /**
      * The connector's uri.  This is used to concatenate
@@ -53,7 +53,7 @@ interface ConnectorContract extends PlayerContract, PropertyContract {
      * according to third party data.
      * @return [type] [description]
      */
-    public function accountPromoName(): void;
+    public function accountPromoName(): string;
 
     /**
      * Return the entire list of supported features (array).

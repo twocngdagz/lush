@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Services\OriginConnector\Providers\Lush\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreLushGroupRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize()
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        return [
+            'name' => 'required',
+            'starts_at_date' => 'required',
+            'starts_at_time' => 'required',
+            'ends_at_date' => 'required',
+            'ends_at_time' => 'required',
+        ];
+    }
+}

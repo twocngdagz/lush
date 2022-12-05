@@ -6,19 +6,21 @@
 namespace App\Services\OriginConnector\Traits;
 
 
+use Exception;
+
 trait ConnectionSettingsTrait
 {
     /**
      * Can the origin connect to the player?
      * @param int $playerId The player ID to test.
-     * @return boolean
+     * @return bool|null
      */
-    public function canGetPlayer($playerId): ?bool
+    public function canGetPlayer(int $playerId): ?bool
     {
         try {
             Origin::getPlayer($playerId);
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
@@ -28,11 +30,11 @@ trait ConnectionSettingsTrait
      * @param int $playerId The player ID to test.
      * @return boolean
      */
-    public function canGetPlayerAccounts($playerId): ?bool
+    public function canGetPlayerAccounts(int $playerId): ?bool
     {
         try {
             return Origin::getPlayerAccounts($playerId);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

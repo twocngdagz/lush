@@ -2,260 +2,218 @@
 
 namespace App\Services\OriginConnector;
 
-use App\Models\Player;
+
+
 use App\Services\OriginConnector\Contracts\ConnectorContract;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Closure;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
-class Connector implements ConnectorContract
+/**
+ * This is the default extendable connector for third parties into the Loyalty System
+ * Each third party data connector will need to extend this file and implement
+ * the required contracts.
+ */
+abstract class Connector implements ConnectorContract
 {
 
+    use Traits\OriginPlayerTrait;
+    use Traits\ConnectionSettingsTrait;
+
     /**
-     * @inheritDoc
+     * Connection timeout in seconds
+     * @var float
+     */
+    protected float $timeout = 10.0;
+
+    /**
+     * The base URL for the connector
+     * @var string
+     */
+    protected string $baseUrl;
+
+    /**
+     * Connector Base Path
+     * @var string
+     */
+    protected string $basePath;
+
+    /**
+     * Cache instance to use for requests
+     */
+    public $cache;
+
+    /**
+     * Cache enable or disable
+     *
+     * @var boolean
+     */
+    public bool $cacheEnabled = false;
+
+    /**
+     * The number of minutes to store data in the cache
+     *
+     * @var integer
+     */
+    public int $cacheMinutes = 1;
+
+    /**
+     * Cache player data enable or disable
+     *
+     * @var boolean
+     */
+    public bool $cachePlayerEnabled = false;
+
+    /**
+     * The number of minutes to store player data in the cache
+     *
+     * @var integer
+     */
+    public int $cachePlayerMinutes = 1;
+
+    /**
+     * Activity Requests can be tracked to not perform
+     * double requests back-to-back when getting multiple
+     * earning account types.
+     *
+     * @var array
+     */
+    public array $playerActivityRequests = [];
+
+    /**
+     * Get the connector version string
+     *
+     * @return string Version Identifier string
+     */
+    public function version(): string
+    {
+        return env('ORIGIN_CONNECTOR_IDENTIFIER');
+    }
+
+    /**
+     * Return the entire list of supported features (array).
+     * Each connector must implement this method to supply
+     * the list of features the connector supports.
+     *
+     * @return array
+     */
+    abstract function supportedFeaturesList(): array;
+
+    /**
+     * Return the entire list of supported features (array) or
+     * a specific feature if the $feature parameter is used.
+     *
+     * @return array/boolean - Returns an array or a boolean
+     */
+    public function supportedFeatures($feature = ''): array
+    {
+        if (strlen($feature) == 0) {
+            return $this->supportedFeaturesList();
+        }
+
+        return Arr::get($this->supportedFeaturesList(), $feature);
+    }
+
+    /**
+     * Set the connection timeout
+     *
+     * @return void
+     **/
+    public function setTimeout($seconds): void
+    {
+        $this->timeout = $seconds;
+    }
+
+    /**
+     * Build the uri path for all non-authorization
+     * calls to the origin api.
+     *
+     * @param string $path The path to append to the API URI
+     * @return string
+     **/
+    public function uri($path = ''): string
+    {
+        return $this->basePath . $path;
+    }
+
+    /**
+     * Cache tag name for tagging requests through the origin connector
+     *
+     * @return string
      */
     public function cacheTag(): string
     {
-        // TODO: Implement cacheTag() method.
+        return 'origin-data';
     }
 
     /**
-     * @inheritDoc
+     * Cache tag name for tagging player data requests through the origin connector
+     *
+     * @return string
      */
-    public function cacheId($appends): string
+    public function cachePlayerTag(): string
     {
-        // TODO: Implement cacheId() method.
+        return 'origin-player-data';
     }
 
     /**
-     * @inheritDoc
+     * String based cache ID for referencing
+     * and storing cached request data
+     *
+     * @param string $append Cache data identifier
+     * @return string
      */
-    public function uri($path = ''): string
+    public function cacheId(string $append): string
     {
-        // TODO: Implement uri() method.
+        return 'origin:requests:' . $append;
     }
 
     /**
-     * @inheritDoc
+     * Make a request but filter it through caching first.
+     *
+     * @param string $cacheId unique cache ID to append to the default cache ID defined by the connector
+     * @param integer $minutes number of minutes to cache the request for
+     * @param Closure $callback
+     * @return collection
      */
-    public function accountPointsName(): string
+    public function remember(string $cacheId, Closure $callback): Collection
     {
-        // TODO: Implement accountPointsName() method.
+        if ($this->cacheEnabled) {
+            return $this->cache->tags($this->cacheTag())->remember($this->cacheId($cacheId), now()->addMinutes($this->cacheMinutes), $callback);
+        } else {
+            return cache()->store('array')->rememberForever($cacheId, $callback);
+        }
     }
 
     /**
-     * @inheritDoc
+     * Make a request but filter it through caching first.
+     *
+     * @param string $cacheId unique cache ID to append to the default cache ID defined by the connector
+     * @param integer $minutes number of minutes to cache the request for
+     * @param Closure $callback
+     * @return collection
      */
-    public function accountCompsName(): string
+    public function rememberPlayer(string $cacheId, Closure $callback): Collection
     {
-        // TODO: Implement accountCompsName() method.
+        if ($this->cachePlayerEnabled) {
+            return $this->cache->tags($this->cachePlayerTag())->remember($this->cacheId($cacheId), now()->addMinutes($this->cachePlayerMinutes), $callback);
+        } else {
+            return cache()->store('array')->rememberForever($cacheId, $callback);
+        }
     }
 
     /**
-     * @inheritDoc
+     * Clear a cached value
+     *
+     * @param string $cacheId unique cache ID to append to the default cache ID defined by the connector
      */
-    public function accountPromoName(): void
+    public function forget(string $cacheId): void
     {
-        // TODO: Implement accountPromoName() method.
+        if ($this->cacheEnabled) {
+            $this->tags($this->cacheTag())->forget($this->cacheId($cacheId));
+        } else {
+            cache()->store('array')->forget($cacheId);
+        }
     }
 
-    /**
-     * @inheritDoc
-     */
-    function supportedFeaturesList(): array
-    {
-        // TODO: Implement supportedFeaturesList() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function connectionSettingsIndex()
-    {
-        // TODO: Implement connectionSettingsIndex() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function connectionSettingsUpdate(Request $request)
-    {
-        // TODO: Implement connectionSettingsUpdate() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerGamingActivityReportGraph($extPlayerId, $days)
-    {
-        // TODO: Implement getPlayerGamingActivityReportGraph() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function apiVersion(): string
-    {
-        // TODO: Implement apiVersion() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerFromSwipeId($swipeId): array
-    {
-        // TODO: Implement getPlayerFromSwipeId() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function validatePinNumber($playerId, $pin): bool
-    {
-        // TODO: Implement validatePinNumber() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayer($id): array
-    {
-        // TODO: Implement getPlayer() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerRankId($id): int
-    {
-        // TODO: Implement getPlayerRankId() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerAccounts($id): array
-    {
-        // TODO: Implement getPlayerAccounts() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerAccountType($id, $accountTypeId): array
-    {
-        // TODO: Implement getPlayerAccountType() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerPointsBalance($id): float
-    {
-        // TODO: Implement getPlayerPointsBalance() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerPromoBalance($id): float
-    {
-        // TODO: Implement getPlayerPromoBalance() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addPlayerPointsBalance($id, $amount, $description, $comment = null, Carbon $expiresAt = null): void
-    {
-        // TODO: Implement addPlayerPointsBalance() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addPlayerPromoBalance($id, $amount, $description, $comment = null, Carbon $expiresAt = null): void
-    {
-        // TODO: Implement addPlayerPromoBalance() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addPlayerAccountBalance($id, $accountId, $amount, $description, $comment = null, Carbon $expiresAt = null): void
-    {
-        // TODO: Implement addPlayerAccountBalance() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerGroups($id): array
-    {
-        // TODO: Implement getPlayerGroups() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPlayerTracking($extPlayerId, Carbon $startDate = null, Carbon $endDate = null, string $statType = null): array
-    {
-        // TODO: Implement getPlayerTracking() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function convertPointsBalanceToDollars($rankId, $balance, $prefix = ''): string
-    {
-        // TODO: Implement convertPointsBalanceToDollars() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function updatePlayerProfile(Player $player, array $params = []): bool
-    {
-        // TODO: Implement updatePlayerProfile() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPropertyGroups($search = null): Collection
-    {
-        // TODO: Implement getPropertyGroups() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPropertyInfo($propertyId): array
-    {
-        // TODO: Implement getPropertyInfo() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPropertyRanks(): Collection
-    {
-        // TODO: Implement getPropertyRanks() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPropertyTransactionTypes($search): Collection
-    {
-        // TODO: Implement getPropertyTransactionTypes() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPropertyPointsPerDollar(): float
-    {
-        // TODO: Implement getPropertyPointsPerDollar() method.
-    }
 }

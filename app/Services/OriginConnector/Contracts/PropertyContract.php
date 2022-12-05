@@ -21,7 +21,7 @@ interface PropertyContract {
      * @param int|string|null $propertyId
      * @return array
      */
-    public function getPropertyInfo($propertyId): array;
+    public function getPropertyInfo(int|string|null $propertyId): array;
 
     /**
      * Get all property ranks (player tiers, player ranks... that type of thing)
@@ -35,7 +35,7 @@ interface PropertyContract {
      * @param int|string|null $search
      * @return Collection
      **/
-    public function getPropertyTransactionTypes($search): Collection;
+    public function getPropertyTransactionTypes(int|string|null $search): Collection;
 
     /**
      * Get the points per dollar ratio from the property;

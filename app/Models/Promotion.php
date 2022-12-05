@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Carbon\Carbon;
 
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -277,9 +279,9 @@ class Promotion extends Model
 
     /**
      * Rewards associated with this promotion that are available to the provided player
-     * @param \App\Player $player
+     * @param Player $player
      * @param $player_detail
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function eligibleRewardsFor(Player $player, $player_detail = null): Collection
     {
@@ -288,7 +290,7 @@ class Promotion extends Model
 
     /**
      * Does the provided player have access to the promotion?
-     * @param \App\Player $player
+     * @param Player $player
      * @return boolean
      */
     public function isPlayerEligible(Player $player): bool
@@ -338,7 +340,7 @@ class Promotion extends Model
         return true;
     }
 
-    public function playerRestrictedByRank($player)
+    public function playerRestrictedByRank(Player $player): bool
     {
         if ($this->ranks->isEmpty()) {
             return false;
@@ -352,7 +354,7 @@ class Promotion extends Model
      * Players will be eligible for this promotion only if
      * they are part of the group selected on (Player Eligibility Section)
      */
-    public function playerRestrictedByGroup(Player $player)
+    public function playerRestrictedByGroup(Player $player): bool
     {
         if ($this->groups->isEmpty()) {
             return false;
@@ -376,7 +378,7 @@ class Promotion extends Model
      * Players will not be eligible with this promotion if
      * they are part of the group selected on (Player Restriction Section)
      */
-    public function playerNotExistInRestrictedGroup(Player $player)
+    public function playerNotExistInRestrictedGroup(Player $player): bool
     {
         if ($this->restrictionGroups->isEmpty()) {
             return true;
@@ -398,9 +400,9 @@ class Promotion extends Model
     /**
      * Promotion earning settings
      *
-     * @return PromotionEarningSetting
+     * @return HasOne
      **/
-    public function earningSettings()
+    public function earningSettings(): HasOne
     {
         return $this->hasOne(PromotionEarningSetting::class);
     }
@@ -408,7 +410,7 @@ class Promotion extends Model
     /**
      * Earn methods relationship
      **/
-    public function earningMethods()
+    public function earningMethods(): HasMany
     {
         return $this->hasMany(PromotionEarningMethod::class);
     }
@@ -416,7 +418,7 @@ class Promotion extends Model
     /**
      * Earn method types relationship
      **/
-    public function earningMethodTypes()
+    public function earningMethodTypes(): HasManyThrough
     {
         return $this->hasManyThrough(EarningMethodType::class, PromotionEarningMethod::class, 'promotion_id', 'id', 'id', 'earning_method_type_id');
     }
@@ -482,9 +484,9 @@ class Promotion extends Model
 
     /**
      * Whitelist players for this promotion
-     * @return BelongsToMany
+     * @return HasMany
      */
-    public function whitelist()
+    public function whitelist(): HasMany
     {
         return $this->hasMany(PromotionWhitelistPlayer::class)->with('player');
     }
@@ -521,9 +523,9 @@ class Promotion extends Model
     /**
      * EarnWin Relationship
      *
-     * @return App\EarnWin
+     * @return HasOne
      **/
-    public function earnWin()
+    public function earnWin(): HasOne
     {
         return $this->hasOne(EarnWin::class);
     }
@@ -599,7 +601,7 @@ class Promotion extends Model
 
     /**
      * Properties that can be selected by the current user for manager redemptions
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function selectableProperties(): Collection
     {
@@ -770,7 +772,7 @@ class Promotion extends Model
      * Does the player meet criteria for this promotion?
      * @param \App\Player $player
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function playerMeetsCriteria(Player $player): bool
     {
@@ -826,14 +828,14 @@ class Promotion extends Model
      * Redraw in the event of a maxed out reward being drawn
      * @param \App\Player $player
      * @return Reward|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function drawReward(Player $player)
     {
         // get the reward pool
         $pool = $this->getRewardPool($player);
         if (is_null($pool) || $pool['total_available'] === 0) {
-            throw new \Exception('No eligible rewards found for player.');
+            throw new Exception('No eligible rewards found for player.');
         }
 
         // Return a randomly selected prize from the pool using cryptographic rng
@@ -848,7 +850,7 @@ class Promotion extends Model
     /**
      * Get the array reward pool of available rewards
      * @param \App\Player $player
-     * @return \Illuminate\Support\Collection|null
+     * @return Collection|null
      */
     public function getRewardPool(Player $player)
     {
