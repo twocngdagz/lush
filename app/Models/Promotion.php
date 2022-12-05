@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\GameMethods;
 use Carbon\Carbon;
 
 use Exception;
@@ -20,6 +21,8 @@ use Illuminate\Support\Facades\Log;
 class Promotion extends Model
 {
     use SoftDeletes;
+    use GameMethods;
+
 
     protected $fillable = [
         'name',

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PromotionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -29,4 +30,7 @@ Route::get('/login',[AuthenticatedSessionController::class, 'create'])
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
 ->name('login.store')
 ->middleware('guest');
+Route::get('/promotions', [PromotionController::class, 'index'])
+    ->name('promotion.index')
+    ->middleware('auth');
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Promotion;
+
 class PromotionController extends Controller
 {
     public function index()
@@ -12,5 +14,6 @@ class PromotionController extends Controller
             ->orderBy('index')
             ->withCount('restrictions')
             ->get();
+        dd($promotions);
     }
 }
