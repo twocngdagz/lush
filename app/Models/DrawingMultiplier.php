@@ -44,7 +44,7 @@ class DrawingMultiplier extends Model
     {
         return $this->belongsToMany(Player::class, 'drawing_multiplier_invited_players')->withTimestamps();
     }
-``
+
     /**
      * Submissions associated with this multiplier
      * @return HasMany
@@ -59,7 +59,7 @@ class DrawingMultiplier extends Model
      * @param  Player $player
      * @return integer
      */
-    public function submissionsForPlayer(Player $player)
+    public function submissionsForPlayer(Player $player): int
     {
         return $this->submissions()->where('player_id', $player->id)->sum('total');
     }
@@ -69,7 +69,7 @@ class DrawingMultiplier extends Model
      * @param  Player $player
      * @return integer
      */
-    public function availableForPlayer(Player $player)
+    public function availableForPlayer(Player $player): int
     {
         if ($this->playerIsRestricted($player)) {
             return 0;
@@ -110,7 +110,7 @@ class DrawingMultiplier extends Model
      * @param $player
      * @return bool
      */
-    public function playerIsRestricted($player)
+    public function playerIsRestricted(Player $player): bool
     {
         // If we have invited players we only allow those invited to use the multiplier
         // Return if the current player was invited
@@ -135,7 +135,7 @@ class DrawingMultiplier extends Model
      * Total number of submissions for this multiplier
      * @return integer
      */
-    public function totalSubmissions()
+    public function totalSubmissions(): int
     {
         return $this->submissions()->sum('total');
     }
@@ -145,7 +145,7 @@ class DrawingMultiplier extends Model
      * @param  integer $value The value to multiply.
      * @return integer
      */
-    public function calculate($value)
+    public function calculate($value): int
     {
         if ($value <= 0) {
             return 0;
@@ -159,7 +159,7 @@ class DrawingMultiplier extends Model
      * @param string $default
      * @return string
      */
-    public function getRankName($default = '-')
+    public function getRankName(string $default = '-'): string
     {
         return Origin::getPropertyRanks()->keyBy('id')->get($this->rank_id)->name ?? $default;
     }

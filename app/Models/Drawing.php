@@ -13,7 +13,9 @@ use Faker\Factory;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -107,7 +109,7 @@ class Drawing extends Model
      * Multipliers for this drawing
      * @return HasMany
      */
-    public function multipliers()
+    public function multipliers(): HasMany
     {
         return $this->hasMany(DrawingMultiplier::class);
     }
@@ -116,7 +118,7 @@ class Drawing extends Model
      * Earn method type relationship
      *
      **/
-    public function earningMethodType()
+    public function earningMethodType(): BelongsTo
     {
         return $this->belongsTo(EarningMethodType::class);
     }
@@ -125,17 +127,17 @@ class Drawing extends Model
      * Earn method type relationship
      *
      **/
-    public function freeRankedEntries()
+    public function freeRankedEntries(): HasMany
     {
         return $this->hasMany(DrawingRankedEntry::class);
     }
 
     /**
      * Get the number of free entries available to a specific rank
-     * @param  integer $externalRankId External Rank Identifier
+     * @param integer $externalRankId External Rank Identifier
      * @return integer
      */
-    public function freeRankedEntriesByRankId($externalRankId)
+    public function freeRankedEntriesByRankId(int $externalRankId): int
     {
         $entry = $this->freeRankedEntries()->where('ext_rank_id', $externalRankId)->first();
 
@@ -146,7 +148,7 @@ class Drawing extends Model
      * DrawingFreeEntryByCriteria relationship
      *
      **/
-    public function freeEntriesByCriteria()
+    public function freeEntriesByCriteria(): HasMany
     {
         return $this->hasMany(DrawingFreeEntryByCriteria::class);
     }
@@ -156,7 +158,7 @@ class Drawing extends Model
      *
      * @return HasMany
      */
-    public function freeRankedAutoSubmissions()
+    public function freeRankedAutoSubmissions(): HasMany
     {
         return $this->hasMany(DrawingRankedAutoSubmission::class)->where('free', '=', true);
     }
@@ -164,16 +166,16 @@ class Drawing extends Model
     /**
      * Submissions relationship
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
-    public function submissions()
+    public function submissions(): BelongsToMany
     {
         return $this->belongsToMany(Player::class, 'drawing_submissions')
             ->withPivot('origin', 'total', 'active', 'active_on', 'drawing_multiplier_id', 'event_id', 'promotion_earning_method_id', 'submitted_by')
             ->withTimestamps();
     }
 
-    public function currentSubmissions()
+    public function currentSubmissions(): BelongsToMany
     {
         if ($this->hasActiveEvent()) {
             $activeEvent = $this->events()->whereNotNull('started_at')->whereNull('ended_at')->first();
@@ -192,7 +194,7 @@ class Drawing extends Model
      * @param  string|null $origin The origin type of submission to count
      * @return integer
      */
-    public function totalSubmissions($origin = null)
+    public function totalSubmissions(?string $origin = null): int
     {
         /**
          * If the origin is null then return the count for all submission.
@@ -208,9 +210,9 @@ class Drawing extends Model
     /**
      * Get submissions for specified origin
      * @param $origin
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
-    public function submissionsByOrigin($origin)
+    public function submissionsByOrigin($origin): BelongsToMany
     {
         // Because the current state of the database allows the origin to
         // either be null or "kiosk" when it's a kiosk entry we need
@@ -229,7 +231,7 @@ class Drawing extends Model
      *
      * @return void
      **/
-    public function inactiveSubmissions()
+    public function inactiveSubmissions(): Builder
     {
         return $this->currentSubmissions()->where('active', false);
     }
@@ -248,7 +250,7 @@ class Drawing extends Model
      * Get the total number of active submissions
      * @return integer
      */
-    public function totalActiveSubmissions()
+    public function totalActiveSubmissions(): int
     {
         return max($this->activeSubmissions()->sum('total'), 0);
     }
@@ -257,7 +259,7 @@ class Drawing extends Model
      * Get the total number of inactive submissions
      * @return integer
      */
-    public function totalInactiveSubmissions()
+    public function totalInactiveSubmissions(): int
     {
         return max($this->inactiveSubmissions()->sum('total'), 0);
     }
@@ -265,9 +267,9 @@ class Drawing extends Model
     /**
      * Return query builder for drawing submission breakdown
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
-    public function submissionBreakdown()
+    public function submissionBreakdown(): Builder
     {
         return DB::table('drawing_submissions')
             ->selectRaw("greatest(sum(total), 0) as total")
@@ -291,9 +293,9 @@ class Drawing extends Model
     /**
      * Return query builder for drawing submission breakdown
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
-    public function currentSubmissionBreakdown()
+    public function currentSubmissionBreakdown(): Builder
     {
         $query = $this->submissionBreakdown();
 
@@ -311,7 +313,7 @@ class Drawing extends Model
      *
      * @return HasMany
      */
-    public function playerRanks()
+    public function playerRanks(): HasMany
     {
         return $this->hasMany(DrawingPlayerRank::class, 'drawing_id');
     }
@@ -320,7 +322,7 @@ class Drawing extends Model
      * Drawing event relationahip
      * @return HasMany
      */
-    public function events()
+    public function events(): HasMany
     {
         return $this->hasMany(DrawingEvent::class, 'drawing_id')->orderBy('date');
     }
@@ -329,7 +331,7 @@ class Drawing extends Model
      * Get a collection of events that are in the future
      * @return Collection
      */
-    public function upcomingEvents()
+    public function upcomingEvents(): Collection
     {
         return $this->events->where('date', '>', now());
     }
@@ -339,7 +341,7 @@ class Drawing extends Model
      * An event is considered active if it has a started_at date but no ended_at date
      * @return bool
      */
-    public function hasActiveEvent()
+    public function hasActiveEvent(): bool
     {
         return $this->events()->whereNotNull('started_at')->whereNull('ended_at')->exists();
     }
@@ -350,7 +352,7 @@ class Drawing extends Model
      * @param null $date date to compare (defaults to now())
      * @return DrawingEvent
      */
-    public function previousEvent($date = null)
+    public function previousEvent($date = null): DrawingEvent
     {
         return $this->events->where('date', '<', $date ?? now())->sortByDesc('date')->first();
     }
@@ -361,7 +363,7 @@ class Drawing extends Model
      * @param null $date date to compare (defaults to now())
      * @return DrawingEvent
      */
-    public function previousStartedEvent($date = null)
+    public function previousStartedEvent($date = null): DrawingEvent
     {
         $query = $this->events()->where('date', '<', $date ?? now())->whereNotNull('started_at');
         // Need to clear the orderBy set in $this->events()
@@ -375,7 +377,7 @@ class Drawing extends Model
      * weekly window?
      * @return boolean
      */
-    public function earningIsTimeframe()
+    public function earningIsTimeframe(): bool
     {
         return $this->earning_starts_at != null;
     }
@@ -384,7 +386,7 @@ class Drawing extends Model
      * Is earning active, right now, for this drawing
      * @return boolean
      */
-    public function getEarningIsActiveAttribute()
+    public function getEarningIsActiveAttribute(): bool
     {
         $now = now();
 
@@ -421,7 +423,7 @@ class Drawing extends Model
      * Drawing earning schedule
      * @return HasMany
      */
-    public function earningSchedule()
+    public function earningSchedule(): HasMany
     {
         return $this->hasMany(DrawingEarningSchedule::class);
     }
@@ -430,7 +432,7 @@ class Drawing extends Model
      * Exclusion periods
      * @return HasMany
      */
-    public function earningExclusionPeriods()
+    public function earningExclusionPeriods(): HasMany
     {
         return $this->hasMany(DrawingEarningExclusionPeriod::class)->orderBy('starts_at');
     }
@@ -439,7 +441,7 @@ class Drawing extends Model
      * Exclusion periods
      * @return HasMany
      */
-    public function earningExclusionSchedule()
+    public function earningExclusionSchedule(): HasMany
     {
         return $this->hasMany(DrawingEarningExclusionSchedule::class);
     }
@@ -447,9 +449,9 @@ class Drawing extends Model
     /**
      * Properties where players can earn entries
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
-    public function earningProperties()
+    public function earningProperties(): BelongsToMany
     {
         return $this->belongsToMany(Property::class, 'drawing_property_earn')->withTimestamps();
     }
@@ -457,9 +459,9 @@ class Drawing extends Model
     /**
      * Properties where players can submit entries
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
-    public function submissionProperties()
+    public function submissionProperties(): BelongsToMany
     {
         return $this->belongsToMany(Property::class, 'drawing_property_submit')->withTimestamps();
     }
@@ -468,7 +470,7 @@ class Drawing extends Model
      * Properties that can be selected by the current user for manager redemptions
      * @return \Illuminate\Support\Collection
      */
-    public function selectableSubmissionProperties()
+    public function selectableSubmissionProperties(): Collection
     {
         $properties = (auth()->user()->isA('super-admin')) ? Property::all() : auth()->user()->properties;
 
@@ -482,7 +484,7 @@ class Drawing extends Model
      * weekly window?
      * @return boolean
      */
-    public function submissionActivationsIsTimeframe()
+    public function submissionActivationsIsTimeframe(): bool
     {
         return $this->submissions_start_at != null || $this->submissionActivationIsMinutesBeforeEvent() || $this->submissionDeactivationIsMinutesBeforeEvent();
     }
@@ -491,7 +493,7 @@ class Drawing extends Model
      * Does the submission period end at a date time or X minutes before event?
      * @return boolean
      */
-    public function submissionDeactivationIsMinutesBeforeEvent()
+    public function submissionDeactivationIsMinutesBeforeEvent(): bool
     {
         return is_null($this->submissions_ends_at) && $this->submissions_end_minutes_before_event != null;
     }
@@ -500,7 +502,7 @@ class Drawing extends Model
      * Does the submission period start X minutes before event?
      * @return boolean
      */
-    public function submissionActivationIsMinutesBeforeEvent()
+    public function submissionActivationIsMinutesBeforeEvent(): bool
     {
         return is_null($this->submissions_starts_at) && $this->submissions_start_minutes_before_event != null;
     }
@@ -509,12 +511,12 @@ class Drawing extends Model
      * Drawing earning schedule
      * @return HasMany
      */
-    public function submissionSchedule()
+    public function submissionSchedule(): HasMany
     {
         return $this->hasMany(DrawingSubmissionSchedule::class);
     }
 
-    public function getSubmissionPeriodAttribute()
+    public function getSubmissionPeriodAttribute(): object
     {
         return (object)[
             'uses_timeframe' => $this->submissionActivationsIsTimeframe(),
@@ -534,7 +536,7 @@ class Drawing extends Model
      * Are submissions active, right now, for this drawing
      * @return boolean
      */
-    public function getSubmissionsAreActiveAttribute()
+    public function getSubmissionsAreActiveAttribute(): bool
     {
         $now = now();
 
@@ -637,9 +639,9 @@ class Drawing extends Model
      * Get active players for this drawing.
      * This means only players that have
      * "active" submissions in the drawing
-     * @return Illuminate\Support\Collection
+     * @return Collection
      */
-    public function activePlayers()
+    public function activePlayers(): Collection
     {
         return $this->activeSubmissions()->groupBy('ext_id')->get();
     }
@@ -648,9 +650,9 @@ class Drawing extends Model
      * Get inactive players for this drawing.
      * This means only players that have
      * "active" submissions in the drawing
-     * @return Illuminate\Support\Collection
+     * @return Collection
      */
-    public function inactivePlayers()
+    public function inactivePlayers(): Collection
     {
         return $this->inactiveSubmissions()->groupBy('ext_id')->get();
     }
@@ -660,9 +662,9 @@ class Drawing extends Model
      *
      * @param Player $player Player eloquent object
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
-    public function submissionsForPlayer(Player $player)
+    public function submissionsForPlayer(Player $player): BelongsToMany
     {
         return $this->currentSubmissions()->where('player_id', $player->id);
     }
@@ -673,9 +675,9 @@ class Drawing extends Model
      * @param Player $player Player eloquent object
      * @param string $origin Submission origin
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
-    public function submissionsForPlayerByOrigin(Player $player, $origin)
+    public function submissionsForPlayerByOrigin(Player $player, $origin): BelongsToMany
     {
         return $this->submissionsByOrigin($origin)->where('player_id', $player->id);
     }
@@ -685,7 +687,7 @@ class Drawing extends Model
      * @param  Player $player
      * @return integer
      */
-    public function totalMultiplierEntriesAvailableForPlayer(Player $player)
+    public function totalMultiplierEntriesAvailableForPlayer(Player $player): int
     {
         return $this->multiplierEntriesAvailableForPlayer($player)->sum();
     }
@@ -695,7 +697,7 @@ class Drawing extends Model
      * @param  Player $player
      * @return Collection
      */
-    public function multiplierEntriesAvailableForPlayer(Player $player)
+    public function multiplierEntriesAvailableForPlayer(Player $player): Collection
     {
         return $this->multipliers->mapWithKeys(function ($multiplier) use ($player) {
             return [$multiplier->id => $multiplier->availableForPlayer($player)];
@@ -706,9 +708,9 @@ class Drawing extends Model
      * Get the winners for this drawing
      *
      * @see App\Models\Drawing\DrawingEvent@winners Winners are decided at the event level
-     * @return Illuminate\Support\Collection
+     * @return Collection
      **/
-    public function winners()
+    public function winners(): Collection
     {
         return $this->events->map(function ($event) {
             return $event->winners()->get();
@@ -718,9 +720,9 @@ class Drawing extends Model
     /**
      * Get all rewards associated through events for this drawing
      *
-     * @return Illuminate\Support\Collection
+     * @return Collection
      **/
-    public function rewards()
+    public function rewards(): Collection
     {
         return $this->hasManyThrough(DrawingEventReward::class, DrawingEvent::class);
     }
@@ -728,9 +730,9 @@ class Drawing extends Model
 
     /**
      * Get the claimed rewards for this drawing
-     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     * @return HasManyThrough
      */
-    public function claimedRewards()
+    public function claimedRewards(): HasManyThrough
     {
         return $this->rewards()->whereNotNull('claimed_at');
     }
@@ -740,8 +742,8 @@ class Drawing extends Model
      *
      * @param Player       $player Player eloquent object
      * @param Integer      $submissionCount number of player submissions
-     * @param string|null  $origin The string identifier for the origin of the submission
-     * @param boolean      $active Active vs inactive state boolean
+     * @param string|null $origin The string identifier for the origin of the submission
+     * @param boolean $active Active vs inactive state boolean
      * @param Integer|null $multiplierId
      * @param Integer|null $event_id
      * @param Integer|null $promotion_earning_method_id
@@ -749,15 +751,16 @@ class Drawing extends Model
      * @return void
      */
     public function addPlayer(
-        Player $player,
-               $submissionCount = 1,
-               $origin = null,
-               $active = false,
-               $multiplierId = null,
-               $event_id = null,
-               $promotion_earning_method_id = null,
-               $user_id = null
-    ) {
+        Player  $player,
+        int     $submissionCount = 1,
+        ?string $origin = null,
+        bool    $active,
+        int     $multiplierId = null,
+        ?int    $event_id = null,
+        ?int     $promotion_earning_method_id = null,
+        ?int $user_id = null
+    ): void
+    {
         if ($submissionCount == 0) {
             return;
         }
@@ -790,9 +793,9 @@ class Drawing extends Model
      * @param Integer $submissionCount number of player submissions
      * @param bool $active
      * @param Int|null $event_id
-     * @return boolean
+     * @return boolean|void
      */
-    public function removeManualSubmissions(Player $player, $submissionCount, $active = false, $event_id = null)
+    public function removeManualSubmissions(Player $player, int $submissionCount, bool $active, int $event_id = null): bool
     {
         if ($submissionCount == 0) {
             return;
@@ -814,7 +817,7 @@ class Drawing extends Model
      * @param null $origin
      * @return  void
      */
-    public function activatePlayerSubmissions(Player $player, $origin = null)
+    public function activatePlayerSubmissions(Player $player, $origin = null): void
     {
         // Set the player rank to save their rank
         // at the time of submission activation.
@@ -846,7 +849,7 @@ class Drawing extends Model
      * @param  Player $player Player to deactivate
      * @return  void
      **/
-    public function deactivatePlayerSubmissions(Player $player)
+    public function deactivatePlayerSubmissions(Player $player): void
     {
         $this->submissionsForPlayer($player)->updateExistingPivot($player->id, ['active' => false]);
     }
@@ -857,7 +860,7 @@ class Drawing extends Model
      *
      * @param Player $player [description]
      */
-    public function setPlayerRank(Player $player)
+    public function setPlayerRank(Player $player): void
     {
         $this->playerRanks()->updateOrCreate(['player_id' => $player->id], ['rank_id' => $player->rank_id]);
     }
@@ -867,7 +870,7 @@ class Drawing extends Model
      *
      * @return boolean
      **/
-    public function hasUnlimitedSubmissions()
+    public function hasUnlimitedSubmissions(): bool
     {
         return !$this->max_earnable;
     }
@@ -880,7 +883,7 @@ class Drawing extends Model
      * @return object
      * @throws \Exception
      */
-    public function getAllAvailableEntries(Player $player, Collection $earnings_by_method)
+    public function getAllAvailableEntries(Player $player, Collection $earnings_by_method): object
     {
         $all_positive_submissions = $this->submissions()
             ->where('player_id', $player->id)
@@ -944,11 +947,11 @@ class Drawing extends Model
      * the player's current submission count,
      * and the max entries available
      *
-     * @param \Illuminate\Support\Collection $earnings_by_method
-     * @param \Illuminate\Support\Collection|null $submissions
-     * @return \Illuminate\Support\Collection
+     * @param  $earnings_by_method
+     * @param Collection|null $submissions
+     * @return Collection
      */
-    public function earnedEntriesAvailable(Collection $earnings_by_method, Collection $submissions)
+    public function earnedEntriesAvailable(Collection $earnings_by_method, ?Collection $submissions): Collection
     {
         $earned_by_method = collect();
         $remaining_from_max = $this->max_earnable - $submissions->sum();
@@ -976,7 +979,7 @@ class Drawing extends Model
      * @param integer $submissions
      * @return integer
      */
-    public function getFreeEntries($submissions)
+    public function getFreeEntries(int $submissions): int
     {
         // Subtract free submissions by the total of submissions added
         return max($this->free_submissions - $submissions, 0);
@@ -989,7 +992,7 @@ class Drawing extends Model
      * @param integer $submissions
      * @return integer
      */
-    public function getFreeRankedEntriesForPlayer(Player $player, $submissions)
+    public function getFreeRankedEntriesForPlayer(Player $player, int $submissions): int
     {
         $entries = $this->freeRankedEntriesByRankId($player->rank_id);
 
@@ -1005,7 +1008,7 @@ class Drawing extends Model
      * @return integer
      * @throws \Exception
      */
-    public function getFreeEntriesByCriteriaForPlayer(Player $player, $submissions)
+    public function getFreeEntriesByCriteriaForPlayer(Player $player, int $submissions): int
     {
         $freeEntries = 0;
 
@@ -1032,7 +1035,7 @@ class Drawing extends Model
      * @param integer $submissions
      * @return integer
      */
-    public function getFreeDailyEntries($submissions)
+    public function getFreeDailyEntries(int $submissions): int
     {
         $entries = $this->daily_free_entries * $this->starts_at->diffInDays(now()->addDay());
 
@@ -1045,7 +1048,7 @@ class Drawing extends Model
      * @param integer $submissions
      * @return integer
      */
-    public function getFreeSubmissionPeriodEntries($submissions)
+    public function getFreeSubmissionPeriodEntries(int $submissions): int
     {
         $entries = ($this->submissions_are_active) ? $this->submission_period_free_entries : 0;
 
@@ -1067,7 +1070,7 @@ class Drawing extends Model
      * @return Collection
      * @throws NoActiveSubmissionsException
      */
-    public function getWinnerSubmissionPool(DrawingEvent $event)
+    public function getWinnerSubmissionPool(DrawingEvent $event): Collection
     {
         /**
          * Active submissions
@@ -1118,7 +1121,7 @@ class Drawing extends Model
      * Indicates if the drawing has submissions
      * @return bool
      */
-    public function getHasSubmissionsAttribute()
+    public function getHasSubmissionsAttribute(): bool
     {
         return $this->submissions->count() > 0;
     }
@@ -1129,7 +1132,7 @@ class Drawing extends Model
      *
      * @return Collection
      */
-    public function getEarningPeriods()
+    public function getEarningPeriods(): Collection
     {
         if ($this->earningIsTimeframe()) {
             // If entries do not rollover start earnings at date of previous event
@@ -1179,7 +1182,7 @@ class Drawing extends Model
         return $this->accountForEarningExclusions($earning_periods);
     }
 
-    public function accountForEarningExclusions(Collection $earning_periods)
+    public function accountForEarningExclusions(Collection $earning_periods): Collection
     {
         $periods_with_exclusions = collect();
 
@@ -1244,7 +1247,7 @@ class Drawing extends Model
         return $periods_with_exclusions;
     }
 
-    public function printEntry(Kiosk $kiosk, Player $player)
+    public function printEntry(Kiosk $kiosk, Player $player): bool
     {
         /**
          * Is this drawing manual?
@@ -1272,7 +1275,7 @@ class Drawing extends Model
      * @param App\Kiosk $kiosk
      * @return array
      */
-    public function getOutputForPrinter(Player $player = null, $kiosk = null)
+    public function getOutputForPrinter(?Player $player = null, ?Kiosk $kiosk = null): array
     {
         $faker = Factory::create();
 

@@ -533,9 +533,9 @@ class Promotion extends Model
     /**
      * Drawing Relationship
      *
-     * @return App\Drawing
+     * @return HasOne
      **/
-    public function drawing()
+    public function drawing(): HasOne
     {
         return $this->hasOne(Drawing::class)->with(['events']);
     }
@@ -543,9 +543,9 @@ class Promotion extends Model
     /**
      * Bonus Relationship
      *
-     * @return App\Bonus
+     * @return HasOne
      **/
-    public function bonus()
+    public function bonus(): HasOne
     {
         return $this->hasOne(Bonus::class);
     }
@@ -553,9 +553,9 @@ class Promotion extends Model
     /**
      * Game Relationship
      *
-     * @return App\Bonus
+     * @return HasOne
      **/
-    public function game()
+    public function game(): HasOne
     {
         return $this->hasOne(Game::class);
     }
