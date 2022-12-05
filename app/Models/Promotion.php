@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\AssociatedWithAccount;
 use App\Traits\GameMethods;
+use App\Traits\LogsAllActivity;
+use App\Traits\PickemMethods;
+use App\Traits\SwipeWinMethods;
 use Carbon\Carbon;
-
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +25,10 @@ class Promotion extends Model
 {
     use SoftDeletes;
     use GameMethods;
+    use PickemMethods;
+    use SwipeWinMethods;
+    use AssociatedWithAccount;
+    use LogsAllActivity;
 
 
     protected $fillable = [
@@ -249,7 +256,7 @@ class Promotion extends Model
      **/
     public function type(): BelongsTo
     {
-        return $this->belongsTo('PromotionType', 'promotion_type_id');
+        return $this->belongsTo(PromotionType::class, 'promotion_type_id');
     }
 
     /**
