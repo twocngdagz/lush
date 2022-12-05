@@ -11,6 +11,7 @@
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
+        "propaganistas/laravel-phone": "^4.4",
         "silber/bouncer": "^1.0",
         "spatie/laravel-activitylog": "^4.7"
     },
@@ -28,7 +29,14 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/conversions.php",
+            "app/Helpers/csv_export.php",
+            "app/Helpers/str_ordinal.php",
+            "app/Helpers/utilities.php",
+            "app/Helpers/origin.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
