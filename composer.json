@@ -13,7 +13,8 @@
         "laravel/tinker": "^2.7",
         "propaganistas/laravel-phone": "^4.4",
         "silber/bouncer": "^1.0",
-        "spatie/laravel-activitylog": "^4.7"
+        "spatie/laravel-activitylog": "^4.7",
+        "spatie/laravel-data": "^2.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
