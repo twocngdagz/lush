@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Traits\LogsAllUserActivity;
 
 use Carbon\Carbon;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,6 +22,7 @@ class User extends Authenticatable
     use HasRolesAndAbilities;
     use Notifiable;
     use LogsAllUserActivity;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -57,6 +60,11 @@ class User extends Authenticatable
         'marketing-manager' => 2,
         'player-rep' => 1,
     ];
+
+    protected static function newFactory()
+    {
+        return UserFactory::new();
+    }
 
     /**
      * Account relationship for users

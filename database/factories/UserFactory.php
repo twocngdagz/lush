@@ -2,7 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Account;
+use App\Models\Property;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -18,23 +22,46 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'name' => faker()->name,
+            'email' => faker()->safeEmail,
+            'password' => Hash::make(Str::random(10)),
             'remember_token' => Str::random(10),
+            'account_id' => function () {
+                return Account::first();
+            },
+            'is_locked' => false,
+            'password_changed_at' => now(),
+            'property_id' => function () {
+                $ids = Property::pluck('id');
+                if ($ids->isNotEmpty()) {
+                    return $ids->first();
+                }
+
+                return Property::factory()->create()->id;
+            }
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     *
-     * @return static
-     */
-    public function unverified()
+    public function superAdmin(): Factory
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->state(function (array $attributes) {
+            return [];
+        })->afterCreating(function (User $user) {
+            $user->assign('super-admin');
+        });
     }
+
+    public function configure()
+    {
+        $this->afterCreating(function (User $user) {
+            $ids = Property::pluck('id');
+            if ($ids->isNotEmpty()) {
+                $user->properties()->attach($ids);
+            } else {
+                $property = Property::factory()->create();
+                $user->properties()->attach($property->id);
+            }
+        });
+    }
+
 }
