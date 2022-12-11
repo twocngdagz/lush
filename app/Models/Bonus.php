@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Traits\EarnsRewards;
+use Database\Factories\BonusFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsAllActivity;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +18,7 @@ class Bonus extends Model
      */
     use EarnsRewards;
     use LogsAllActivity;
+    use HasFactory;
 
     protected $fillable = [
         'promotion_id',
@@ -25,6 +28,11 @@ class Bonus extends Model
         'ends_at'
     ];
     protected $dates = ['starts_at', 'ends_at', 'created_at', 'updated_at'];
+
+    public static function newFactory(): BonusFactory
+    {
+        return BonusFactory::new();
+    }
 
     /**
      * Reward limit relationship
