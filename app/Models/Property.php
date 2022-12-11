@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Services\OriginConnector\Providers\Oasis\v12\nConnect\v1\Models\PropertyRedemptionAccountSettings;
 use App\Traits\LogsAllActivity;
+use Database\Factories\PropertyFactory;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -14,9 +16,15 @@ use Illuminate\Support\Facades\Cache;
 class Property extends Model
 {
     use LogsAllActivity;
+    use HasFactory;
 
     protected $guarded = [];
     protected $appends = ['display_name', 'lush_apps'];
+
+    public static function newFactory()
+    {
+        return PropertyFactory::new();
+    }
 
     public function getDisplayNameAttribute(): ?string
     {

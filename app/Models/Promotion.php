@@ -8,8 +8,10 @@ use App\Traits\LogsAllActivity;
 use App\Traits\PickemMethods;
 use App\Traits\SwipeWinMethods;
 use Carbon\Carbon;
+use Database\Factories\PromotionFactory;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,6 +31,7 @@ class Promotion extends Model
     use SwipeWinMethods;
     use AssociatedWithAccount;
     use LogsAllActivity;
+    use HasFactory;
 
 
     protected $fillable = [
@@ -74,6 +77,11 @@ class Promotion extends Model
 
             $query->forProperties(auth()->user()->property_ids);
         });
+    }
+
+    protected static function newFactory()
+    {
+        return PromotionFactory::new();
     }
 
     /**
