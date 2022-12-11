@@ -55,7 +55,7 @@ class LushConnector extends Connector
     /**
      * @inheritDoc
      */
-    function supportedFeaturesList(): array
+    function supportedFeaturesList(): array|bool
     {
         return [
             'global' => [

@@ -32,7 +32,7 @@ interface ConnectorContract extends PlayerContract, PropertyContract {
      * @param  string $path URI path
      * @return string Full url
      */
-    public function uri($path = ''): string;
+    public function uri(string $path = ''): string;
 
     /**
      * Returns the name of the Points account according to the
@@ -58,9 +58,9 @@ interface ConnectorContract extends PlayerContract, PropertyContract {
     /**
      * Return the entire list of supported features (array).
      *
-     * @return array
+     * @return array|bool
      */
-    function supportedFeaturesList(): array;
+    function supportedFeaturesList(): array|bool;
 
     /**
      * Display connector connection settings

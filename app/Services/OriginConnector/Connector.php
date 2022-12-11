@@ -95,9 +95,9 @@ abstract class Connector implements ConnectorContract
      * Each connector must implement this method to supply
      * the list of features the connector supports.
      *
-     * @return array
+     * @return array|bool
      */
-    abstract function supportedFeaturesList(): array;
+    abstract function supportedFeaturesList(): array|bool;
 
     /**
      * Return the entire list of supported features (array) or
@@ -105,7 +105,7 @@ abstract class Connector implements ConnectorContract
      *
      * @return array/boolean - Returns an array or a boolean
      */
-    public function supportedFeatures($feature = ''): array
+    public function supportedFeatures($feature = ''): array|bool
     {
         if (strlen($feature) == 0) {
             return $this->supportedFeaturesList();
